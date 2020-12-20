@@ -1,0 +1,102 @@
+<html>
+<body>
+<canvas id="can" width=900 height=600></canvas>
+<script>
+var canvas = document.getElementById("can");
+var ctx = canvas.getContext("2d");
+var highScore = 0;
+
+var keysPressed = []; //x, y
+var playerY = 300;
+var playerX = 0;
+var playerV = 0;
+var speed = 5;
+var pillars = [];
+var gameScreen = 0;
+function doKeyDown(e) {
+	e = e.key;
+	keysPressed.push(e);
+}
+function isKeyPressed(key) {
+	return keysPressed.includes(key);
+}
+function renderPillars() {
+	ctx.fillStyle = "green";
+	for (var i = 0; i < pillars.length; i++) {
+		ctx.fillRect(pillars[i][0]-25, 0, 50, pillars[i][1]-100);
+		ctx.fillRect(pillars[i][0]-25, pillars[i][1]+100, 50, 800-pillars[i][1]);
+	}
+}
+function updatePillars() {
+	for (var i = 0; i < pillars.length; i++) {
+		//top pillar
+		if (pillars[i][0]-25 <= 120 && pillars[i][0]+25 >= 100 && playerY-10 < pillars[i][1]-100) {
+			gameScreen = 0;
+		}
+		//bottom pillar
+		if (pillars[i][0]-25 <= 120 && pillars[i][0]+25 >= 100 && playerY+10 > pillars[i][1]+100) {
+			gameScreen = 0;
+		}
+		pillars[i][0] -= speed;
+	}
+}
+
+document.addEventListener("keydown", doKeyDown, true);
+function onEachFrame() {
+	if (gameScreen == 0) {
+		if (playerX > highScore) {
+			highScore = playerX;
+		}
+		ctx.fillStyle = "black";
+		ctx.fillRect(0,0,900,600);
+		ctx.fillStyle = "red";
+		ctx.font = "76px Arial";
+		ctx.fillText("Game Over", 10, 86);
+		ctx.fillStyle = "green";
+		ctx.font = "32px Arial";
+		ctx.fillText("Score: " + playerX, 10, 150);
+		ctx.fillStyle = "#CC0000";
+		ctx.fillText("High Score: " + highScore, 10, 200);
+		ctx.fillStyle = "magenta";
+		ctx.fillText("Press space to continue", 10, 250);
+		if (isKeyPressed(" ")) {
+			keysPressed = []; //x, y
+			playerY = 300;
+			playerX = 0;
+			playerV = 0;
+			speed = 5;
+			pillars = [];
+			gameScreen = 1;
+		}
+	}
+	console.log(speed);
+	if (gameScreen == 1) {
+		ctx.fillStyle = "#0000CC";
+		ctx.fillRect(0,0,900,600);
+		ctx.fillStyle = "yellow";
+		ctx.fillRect(100, playerY - 10, 20, 20);
+		playerY += playerV;
+		playerV += .5;
+		if (isKeyPressed(" ")) {
+			playerV = -10;
+		}
+		playerX += speed;
+		if (Math.floor(playerX/400) != Math.floor((playerX-speed)/400)) {
+			pillars.push([1100, Math.random()*400+100]);
+		}
+		if (playerY > 600) { gameScreen = 0 };
+		renderPillars();
+		updatePillars();
+		ctx.fillStyle = "red";
+		ctx.font = "32px Arial";
+		ctx.fillText("Score: " + playerX, 10, 42);
+	}
+}
+
+setInterval(function() {
+onEachFrame();
+keysPressed = [];
+}, 1000/60);
+</script>
+</body>
+</html>
